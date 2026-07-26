@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Car Log">
+  <link rel="apple-touch-icon" href="icon.png">
+  <title>Car Log</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 24px;
+    }
+    
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .nav-btn {
+      padding: 14px;
+      border: none;
+      background: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .nav-btn.active {
+      background: #F5B800;
+      color: white;
+    }
+    
+    .panel {
+      display: none;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .panel.active {
+      display: block;
+    }
+    
+    .sub-tabs {
+      display: flex;
+      margin-bottom: 20px;
+      background: #f0f0f0;
+      border-radius: 10px;
+      padding: 4px;
+    }
+    
+    .sub-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    
+    .sub-tab.active {
+      background: #fff;
+      font-weight: 600;
+    }
+    
+    .sub-panel {
+      display: none;
+    }
+    
+    .sub-panel.active {
+      display: block;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group.hidden {
+      display: none;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #555;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      max-width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.2s;
+      background: #fff;
+      color: #333;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+    
+    input[type="date"] {
+      min-height: 48px;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #F5B800;
+    }
+    
+    .row {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .row .form-group {
+      flex: 1;
+    }
+    
+    button.submit {
+      width: 100%;
+      padding: 14px;
+      background: #F5B800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    button.submit:hover {
+      background: #E0A800;
+    }
+    
+    button.submit:disabled {
+      background: #ccc;
+    }
+    
+    .message {
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      display: none;
+    }
+    
+    .message.success {
+      display: block;
+      background: #fff8e1;
+      color: #f9a825;
+    }
+    
+    .message.error {
+      display: block;
+      background: #ffebee;
+      color: #c62828;
+    }
+    
+    .month-selector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .month-selector button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: #F5B800;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    
+    .month-selector button:hover {
+      background: #E0A800;
+    }
+    
+    .month-selector span {
+      font-size: 18px;
+      font-weight: 600;
+      min-width: 140px;
+      text-align: center;
+    }
+    
+    .summary-cards {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .summary-card {
+      flex: 1;
+      background: linear-gradient(135deg, #F5B800, #FFCA28);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    
+    .summary-card.eur {
+      background: linear-gradient(135deg, #3F51B5, #7986CB);
+    }
+    
+    .summary-card.mpg {
+      background: linear-gradient(135deg, #4CAF50, #81C784);
+    }
+    
+    .summary-card .total {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    .summary-card .label {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    .entry-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .entry:last-child {
+      border-bottom: none;
+    }
+    
+    .entry-info .place {
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .entry-info .date {
+      font-size: 13px;
+      color: #888;
+    }
+    
+    .entry-info .details {
+      font-size: 13px;
+      color: #666;
+    }
+    
+    .entry-amount {
+      font-weight: 700;
+      font-size: 16px;
+      text-align: right;
+    }
+    
+    .entry-amount.gbp {
+      color: #F5B800;
+    }
+    
+    .entry-amount.eur {
+      color: #3F51B5;
+    }
+    
+    .entry-amount .mpg {
+      font-size: 12px;
+      color: #4CAF50;
+      display: block;
+    }
+    
+    .no-data {
+      text-align: center;
+      color: #888;
+      padding: 40px 0;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px 0;
+      color: #888;
+    }
+    
+    .car-details {
+      text-align: center;
+    }
+    
+    .car-details .car-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+    
+    .car-details .car-name {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    
+    .car-details .car-model {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 24px;
+    }
+    
+    .car-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      text-align: left;
+    }
+    
+    .car-info-item {
+      background: #f9f9f9;
+      padding: 16px;
+      border-radius: 10px;
+    }
+    
+    .car-info-item .label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    
+    .car-info-item .value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .maintenance-entry {
+      padding: 16px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .maintenance-entry:last-child {
+      border-bottom: none;
+    }
+    
+    .maintenance-entry .description {
+      font-weight: 600;
+      color: #333;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+    
+    .maintenance-entry .meta {
+      font-size: 13px;
+      color: #888;
+    }
+    
+    .maintenance-entry .meta span {
+      margin-right: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚗 Car Log</h1>
+    
+    <div class="nav-buttons">
+      <button class="nav-btn active" onclick="showPanel('fuel')">⛽ Fuel Log</button>
+      <button class="nav-btn" onclick="showPanel('maintenance')">🔧 Maintenance</button>
+      <button class="nav-btn" onclick="showPanel('car')">🚘 Car Details</button>
+    </div>
+    
+    
+    <div id="fuel-panel" class="panel active">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="showSubPanel('fuel', 'input')">Add Entry</button>
+        <button class="sub-tab" onclick="showSubPanel('fuel', 'view')">Monthly View</button>
+      </div>
+      
+      <div id="fuel-input" class="sub-panel active">
+        <form id="fuel-form">
+          <div class="form-group">
+            <label for="fuel-date">Date</label>
+            <input type="date" id="fuel-date" required>
+          </div>
+          
+          <div class="row">
+            <div class="form-group">
+              <label for="fuel-litres">Litres</label>
+              <input type="number" id="fuel-litres" step="0.01" placeholder="0.00" required>
+            </div>
+            <div class="form-group">
+              <label for="fuel-miles">Miles</label>
+              <input type="number" id="fuel-miles" step="0.1" placeholder="0.0" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="fuel-place">Place</label>
+            <select id="fuel-place" required onchange="toggleOtherField('fuel-place', 'fuel-other-place-group')">
+              <option value="" disabled selected>Select a station</option>
+              <option value="Costco">Costco</option>
+              <option value="Sainsbury's">Sainsbury's</option>
+              <option value="Tesco">Tesco</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          
+          <div class="form-group hidden" id="fuel-other-place-group">
+            <label for="fuel-other-place">Specify station</label>
+            <input type="text" id="fuel-other-place" placeholder="e.g. Shell">
+          </div>
+          
+          <div class="row">
+            <div class="form-group">
+              <label for="fuel-price">Price / Litre</label>
+              <input type="number" id="fuel-price" step="0.001" placeholder="0.000" required>
+            </div>
+            <div class="form-group">
+              <label for="fuel-currency">Currency</label>
+              <select id="fuel-currency">
+                <option value="GBP">GBP (£)</option>
+                <option value="EUR">EUR (€)</option>
+              </select>
+            </div>
+          </div>
+          
+          <button type="submit" class="submit" id="fuel-submit-btn">Add Fuel Entry</button>
+        </form>
+        
+        <div id="fuel-message" class="message"></div>
+      </div>
+      
+      <div id="fuel-view" class="sub-panel">
+        <div class="month-selector">
+          <button onclick="changeFuelMonth(-1)">‹</button>
+          <span id="fuel-month-label">July 2026</span>
+          <button onclick="changeFuelMonth(1)">›</button>
+        </div>
+        
+        <div class="summary-cards">
+          <div class="summary-card gbp">
+            <div class="label">Pounds</div>
+            <div class="total" id="fuel-total-gbp">£0.00</div>
+          </div>
+          <div class="summary-card eur">
+            <div class="label">Euros</div>
+            <div class="total" id="fuel-total-eur">€0.00</div>
+          </div>
+        </div>
+        
+        <div class="summary-cards">
+          <div class="summary-card mpg">
+            <div class="label">Avg MPG</div>
+            <div class="total" id="fuel-avg-mpg">0.0</div>
+          </div>
+        </div>
+        
+        <div id="fuel-entry-list" class="entry-list">
+          <div class="loading">Loading...</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div id="maintenance-panel" class="panel">
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="showSubPanel('maintenance', 'input')">Add Entry</button>
+        <button class="sub-tab" onclick="showSubPanel('maintenance', 'view')">History</button>
+      </div>
+      
+      <div id="maintenance-input" class="sub-panel active">
+        <form id="maintenance-form">
+          <div class="form-group">
+            <label for="maint-date">Date</label>
+            <input type="date" id="maint-date" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="maint-description">Description</label>
+            <textarea id="maint-description" rows="3" placeholder="e.g. Oil change, new wiper blades..." required></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="maint-place">Place</label>
+            <select id="maint-place" required onchange="toggleOtherField('maint-place', 'maint-other-place-group')">
+              <option value="" disabled selected>Select a place</option>
+              <option value="Authorized">Authorized</option>
+              <option value="Fabinho">Fabinho</option>
+              <option value="Home">Home</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          
+          <div class="form-group hidden" id="maint-other-place-group">
+            <label for="maint-other-place">Specify place</label>
+            <input type="text" id="maint-other-place" placeholder="e.g. Kwik Fit">
+          </div>
+          
+          <button type="submit" class="submit" id="maint-submit-btn">Add Maintenance Entry</button>
+        </form>
+        
+        <div id="maint-message" class="message"></div>
+      </div>
+      
+      <div id="maintenance-view" class="sub-panel">
+        <div id="maintenance-list" class="entry-list">
+          <div class="loading">Loading...</div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <div id="car-panel" class="panel">
+      <div id="car-display" class="car-details">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============== PASTE YOUR WEB APP URL HERE ==============
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwZVGOX-xg_3Mle1hrhX0BTnli4gRBVLnzmTyxkKsQ7Ic6oNz3v7eryLUB5uYqqsKe6/exec';
+    // =========================================================
+    
+    const currencySymbols = { GBP: '£', EUR: '€' };
+    
+    let fuelData = [];
+    let maintenanceData = [];
+    let carData = null;
+    let fuelCurrentDate = new Date();
+    
+    // Set today's date as default
+    document.getElementById('fuel-date').valueAsDate = new Date();
+    document.getElementById('maint-date').valueAsDate = new Date();
+    
+    // Panel switching
+    function showPanel(panel) {
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(panel + '-panel').classList.add('active');
+      
+      if (panel === 'fuel') {
+        // Already loaded on first view
+      } else if (panel === 'maintenance') {
+        loadMaintenanceData();
+      } else if (panel === 'car') {
+        loadCarData();
+      }
+    }
+    
+    // Sub-panel switching
+    function showSubPanel(panel, subPanel) {
+      const panelEl = document.getElementById(panel + '-panel');
+      panelEl.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+      panelEl.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(panel + '-' + subPanel).classList.add('active');
+      
+      if (panel === 'fuel' && subPanel === 'view') {
+        loadFuelData();
+      } else if (panel === 'maintenance' && subPanel === 'view') {
+        loadMaintenanceData();
+      }
+    }
+    
+    // Toggle "Other" field
+    function toggleOtherField(selectId, otherGroupId) {
+      const select = document.getElementById(selectId);
+      const otherGroup = document.getElementById(otherGroupId);
+      const otherInput = otherGroup.querySelector('input');
+      
+      if (select.value === 'Other') {
+        otherGroup.classList.remove('hidden');
+        otherInput.required = true;
+      } else {
+        otherGroup.classList.add('hidden');
+        otherInput.required = false;
+        otherInput.value = '';
+      }
+    }
+    
+    // Fuel form submission
+    document.getElementById('fuel-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = document.getElementById('fuel-submit-btn');
+      const msg = document.getElementById('fuel-message');
+      
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      msg.className = 'message';
+      
+      let place = document.getElementById('fuel-place').value;
+      if (place === 'Other') {
+        place = 'Other: ' + document.getElementById('fuel-other-place').value.trim();
+      }
+      
+      const entry = {
+        type: 'fuel',
+        date: document.getElementById('fuel-date').value,
+        litres: parseFloat(document.getElementById('fuel-litres').value),
+        miles: parseFloat(document.getElementById('fuel-miles').value),
+        place: place,
+        pricePerLitre: parseFloat(document.getElementById('fuel-price').value),
+        currency: document.getElementById('fuel-currency').value
+      };
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(entry)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          msg.textContent = '✓ Fuel entry added! MPG: ' + result.mpg;
+          msg.className = 'message success';
+          document.getElementById('fuel-form').reset();
+          document.getElementById('fuel-date').valueAsDate = new Date();
+          document.getElementById('fuel-other-place-group').classList.add('hidden');
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        msg.textContent = '✗ Failed to save. Check connection.';
+        msg.className = 'message error';
+      }
+      
+      btn.disabled = false;
+      btn.textContent = 'Add Fuel Entry';
+      
+      setTimeout(() => { msg.className = 'message'; }, 3000);
+    });
+    
+    // Maintenance form submission
+    document.getElementById('maintenance-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = document.getElementById('maint-submit-btn');
+      const msg = document.getElementById('maint-message');
+      
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      msg.className = 'message';
+      
+      let place = document.getElementById('maint-place').value;
+      if (place === 'Other') {
+        place = 'Other: ' + document.getElementById('maint-other-place').value.trim();
+      }
+      
+      const entry = {
+        type: 'maintenance',
+        date: document.getElementById('maint-date').value,
+        description: document.getElementById('maint-description').value,
+        place: place
+      };
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(entry)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          msg.textContent = '✓ Maintenance entry added!';
+          msg.className = 'message success';
+          document.getElementById('maintenance-form').reset();
+          document.getElementById('maint-date').valueAsDate = new Date();
+          document.getElementById('maint-other-place-group').classList.add('hidden');
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (error) {
+        msg.textContent = '✗ Failed to save. Check connection.';
+        msg.className = 'message error';
+      }
+      
+      btn.disabled = false;
+      btn.textContent = 'Add Maintenance Entry';
+      
+      setTimeout(() => { msg.className = 'message'; }, 3000);
+    });
+    
+    // Load fuel data
+    async function loadFuelData() {
+      const listEl = document.getElementById('fuel-entry-list');
+      listEl.innerHTML = '<div class="loading">Loading...</div>';
+      
+      try {
+        const response = await fetch(API_URL + '?action=fuel');
+        const result = await response.json();
+        
+        if (result.success) {
+          fuelData = result.data.fuel || [];
+          renderFuelMonth();
+        } else {
+          throw new Error('Failed to load');
+        }
+      } catch (error) {
+        listEl.innerHTML = '<div class="no-data">Failed to load data</div>';
+      }
+    }
+    
+    // Change fuel month
+    function changeFuelMonth(delta) {
+      fuelCurrentDate.setMonth(fuelCurrentDate.getMonth() + delta);
+      renderFuelMonth();
+    }
+    
+    // Render fuel month
+    function renderFuelMonth() {
+      const year = fuelCurrentDate.getFullYear();
+      const month = fuelCurrentDate.getMonth();
+      
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+      document.getElementById('fuel-month-label').textContent = `${monthNames[month]} ${year}`;
+      
+      // Filter entries for current month
+      const filtered = fuelData.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate.getFullYear() === year && entryDate.getMonth() === month;
+      });
+      
+      // Sort by date descending
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      // Calculate totals
+      let totalGBP = 0;
+      let totalEUR = 0;
+      let totalMPG = 0;
+      let mpgCount = 0;
+      
+      filtered.forEach(e => {
+        const litres = parseFloat(e.litres) || 0;
+        const price = parseFloat(e.pricePerLitre) || 0;
+        const cost = litres * price;
+        
+        if (e.currency === 'GBP') totalGBP += cost;
+        else if (e.currency === 'EUR') totalEUR += cost;
+        
+        const mpg = parseFloat(e.mpg) || 0;
+        if (mpg > 0) {
+          totalMPG += mpg;
+          mpgCount++;
+        }
+      });
+      
+      document.getElementById('fuel-total-gbp').textContent = `£${totalGBP.toFixed(2)}`;
+      document.getElementById('fuel-total-eur').textContent = `€${totalEUR.toFixed(2)}`;
+      document.getElementById('fuel-avg-mpg').textContent = mpgCount > 0 ? (totalMPG / mpgCount).toFixed(1) : '0.0';
+      
+      // Render list
+      const listEl = document.getElementById('fuel-entry-list');
+      
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div class="no-data">No entries this month</div>';
+        return;
+      }
+      
+      listEl.innerHTML = filtered.map(entry => {
+        const sym = currencySymbols[entry.currency] || entry.currency;
+        const litres = parseFloat(entry.litres) || 0;
+        const price = parseFloat(entry.pricePerLitre) || 0;
+        const cost = (litres * price).toFixed(2);
+        const currencyClass = entry.currency.toLowerCase();
+        const mpg = parseFloat(entry.mpg).toFixed(1);
+        
+        const dateStr = new Date(entry.date).toLocaleDateString('en-GB', { 
+          day: 'numeric', month: 'short' 
+        });
+        
+        return `
+          <div class="entry">
+            <div class="entry-info">
+              <div class="place">${entry.place}</div>
+              <div class="date">${dateStr}</div>
+              <div class="details">${litres}L • ${entry.miles} miles • ${sym}${price}/L</div>
+            </div>
+            <div class="entry-amount ${currencyClass}">
+              ${sym}${cost}
+              <span class="mpg">${mpg} MPG</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Load maintenance data
+    async function loadMaintenanceData() {
+      const listEl = document.getElementById('maintenance-list');
+      listEl.innerHTML = '<div class="loading">Loading...</div>';
+      
+      try {
+        const response = await fetch(API_URL + '?action=maintenance');
+        const result = await response.json();
+        
+        if (result.success) {
+          maintenanceData = result.data.maintenance || [];
+          renderMaintenanceList();
+        } else {
+          throw new Error('Failed to load');
+        }
+      } catch (error) {
+        listEl.innerHTML = '<div class="no-data">Failed to load data</div>';
+      }
+    }
+    
+    // Render maintenance list
+    function renderMaintenanceList() {
+      const listEl = document.getElementById('maintenance-list');
+      
+      if (maintenanceData.length === 0) {
+        listEl.innerHTML = '<div class="no-data">No maintenance records</div>';
+        return;
+      }
+      
+      // Sort by date descending
+      const sorted = [...maintenanceData].sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      listEl.innerHTML = sorted.map(entry => {
+        const dateStr = new Date(entry.date).toLocaleDateString('en-GB', { 
+          day: 'numeric', month: 'short', year: 'numeric'
+        });
+        
+        return `
+          <div class="maintenance-entry">
+            <div class="description">${entry.description}</div>
+            <div class="meta">
+              <span>📅 ${dateStr}</span>
+              <span>📍 ${entry.place}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Load car data
+    async function loadCarData() {
+      const displayEl = document.getElementById('car-display');
+      displayEl.innerHTML = '<div class="loading">Loading...</div>';
+      
+      try {
+        const response = await fetch(API_URL + '?action=car');
+        const result = await response.json();
+        
+        if (result.success && result.data.car) {
+          carData = result.data.car;
+          renderCarDetails();
+        } else {
+          displayEl.innerHTML = '<div class="no-data">No car details found.<br>Add your car info to the Google Sheet.</div>';
+        }
+      } catch (error) {
+        displayEl.innerHTML = '<div class="no-data">Failed to load data</div>';
+      }
+    }
+    
+    // Render car details
+    function renderCarDetails() {
+      const displayEl = document.getElementById('car-display');
+      
+      displayEl.innerHTML = `
+        <div class="car-icon">🚗</div>
+        <div class="car-name">${carData.nickname || 'My Car'}</div>
+        <div class="car-model">${carData.make} ${carData.model}</div>
+        <div class="car-info-grid">
+          <div class="car-info-item">
+            <div class="label">Year</div>
+            <div class="value">${carData.year}</div>
+          </div>
+          <div class="car-info-item">
+            <div class="label">Registration</div>
+            <div class="value">${carData.registration}</div>
+          </div>
+          <div class="car-info-item">
+            <div class="label">Make</div>
+            <div class="value">${carData.make}</div>
+          </div>
+          <div class="car-info-item">
+            <div class="label">Model</div>
+            <div class="value">${carData.model}</div>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
